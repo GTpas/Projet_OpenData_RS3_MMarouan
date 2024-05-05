@@ -14,7 +14,7 @@ def preprocess_text(text):
     # Tokenization
     tokens = nltk.word_tokenize(text.lower())
 
-    # Élimination des "stops words"
+    # Élimination des stop words
     stop_words = set(stopwords.words('french'))
     filtered_tokens = [token for token in tokens if token not in stop_words]
 
@@ -31,8 +31,7 @@ def rag_pipeline(call_for_proposal):
     call_for_proposal = preprocess_text(call_for_proposal)
     companies = [d['nom_courant_denomination'] for d in data]
     actions = [preprocess_text(d.get('action_rse', '')) for d in data]
-    hierarchies = [preprocess_text(d.get('hierarchie_naf', '')) for d in data]
-    texts = actions + hierarchies
+
 
     # Classification des actions RSE selon les critères ISO 26000
     iso_classification = [classify_actions_rse_ISO26000(d) for d in data]
@@ -45,15 +44,15 @@ def rag_pipeline(call_for_proposal):
 
     # Vectorisation
     vectorizer = TfidfVectorizer()
-    vectors = vectorizer.fit_transform([call_for_proposal] + texts)
+    vectors = vectorizer.fit_transform([call_for_proposal] + actions)
 
     # Calcul du résultat similaire
     similarities = cosine_similarity(vectors[0], vectors[1:])
 
     # Obtenir le meilleur score
-    top_scores = np.argsort(similarities.flatten())[::-1][:20]
+    top_scores = np.argsort(similarities.flatten())[::-1][:10]
 
     # Sélectionner les entreprises ayant les meilleurs scores
-    results = [(companies[i], similarities[0][i],hierarchies[i], iso_classification[i], odd_classification[i], impact_classification[i]) for i in top_scores]
+    results = [(companies[i], similarities[0][i], iso_classification[i], odd_classification[i], impact_classification[i]) for i in top_scores]
 
     return results
