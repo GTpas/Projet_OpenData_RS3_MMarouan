@@ -48,10 +48,21 @@ def classify_actions_rse_IMPACTSCORE(data):
             if any(key_phrase in action_rse for key_phrase in key_phrases):
                 criteria[criterion].append(company_info)
                 found_category = True
-                break  # Assuming each action belongs to one category only
+                break
         
         # Si l'action n'a pas été classifiée dans une catégorie existante, la placer dans "Autres"
         if not found_category:
             criteria["Autres"].append(company_info)
 
     return criteria
+
+def display_results(criteria):
+
+    for criterion, actions in criteria.items():
+        print(f"{criterion}:")
+        for action in actions:
+            print(f"- {action['name']} ({action['city']}): {action['action_rse']}")
+
+
+impact_score_RSE = classify_actions_rse_IMPACTSCORE(get_data())
+display_results(impact_score_RSE)
